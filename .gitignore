@@ -1,0 +1,6 @@
+venv/
+.env
+models/
+data/raw/
+.ipynb_checkpoints/
+wandb/
