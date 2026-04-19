@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 
-DATASET_PATH = "data/cleaned/dataset_corrected.jsonl"
+DATASET_PATH = "data/raw/other_100_synthetic.jsonl"
 
 ALLOWED_DOMAIN_LABELS = {
     "Web Frontend",
@@ -14,6 +14,7 @@ ALLOWED_DOMAIN_LABELS = {
     "Cybersecurity",
     "Embedded Systems and IoT",
     "High Performance and Quantum Computing",
+    "Other",
 }
 
 ALLOW_OVERLAPS = False

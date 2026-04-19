@@ -5,6 +5,7 @@ from pathlib import Path
 
 # CONFIG
 INPUT_FILE = "data/cleaned/dataset_corrected.jsonl"
+OUTPUT_DIR = "data/cleaned/splits"
 
 TRAIN_RATIO = 0.80
 VAL_RATIO   = 0.10
@@ -12,7 +13,6 @@ TEST_RATIO  = 0.10
 
 SEED = 42
 
-OUTPUT_DIR = "data/cleaned/splits"
 
 
 # LOAD DATA
