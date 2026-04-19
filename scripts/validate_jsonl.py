@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 
-DATASET_PATH = "data/raw/dataset_corrected.jsonl"
+DATASET_PATH = "data/cleaned/dataset_corrected.jsonl"
 
 ALLOWED_DOMAIN_LABELS = {
     "Web Frontend",
