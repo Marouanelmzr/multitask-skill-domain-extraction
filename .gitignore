@@ -4,3 +4,4 @@ models/
 data/raw/
 .ipynb_checkpoints/
 wandb/
+scripts/__pycache__/
