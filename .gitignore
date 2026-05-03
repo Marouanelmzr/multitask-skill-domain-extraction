@@ -5,3 +5,4 @@ data/raw/
 .ipynb_checkpoints/
 wandb/
 scripts/__pycache__/
+weights/
