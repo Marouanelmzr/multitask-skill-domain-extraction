@@ -1,7 +1,44 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
+from scripts.inference import load_model, predict_text
 
-app = FastAPI()
+app = FastAPI(
+    title="Portfolio NLP API",
+    description="Detect technologies and classify project domains",
+    version="1.0.0"
+)
+
+# Load model once when API starts
+model, tokenizer, device = load_model()
+
+
+class PredictionRequest(BaseModel):
+    text: str
+
 
 @app.get("/")
-def read_root():
-    return {"message": "AI service is running !!"}
+def root():
+    return {
+        "message": "Portfolio NLP API is running"
+    }
+
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "ok",
+        "model": "xlm-roberta-base"
+    }
+
+
+@app.post("/predict")
+def predict(request: PredictionRequest):
+    result = predict_text(
+        text=request.text,
+        model=model,
+        tokenizer=tokenizer,
+        device=device,
+        domain_threshold=0.1
+    )
+
+    return result
