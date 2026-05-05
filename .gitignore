@@ -6,3 +6,4 @@ data/raw/
 wandb/
 scripts/__pycache__/
 weights/
+.venv/
