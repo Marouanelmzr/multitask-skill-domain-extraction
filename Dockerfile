@@ -25,5 +25,5 @@ COPY requirements.dev.txt .
 EXPOSE 8000
 RUN pip install --no-cache-dir -r requirements.dev.txt
 COPY scripts ./scripts
-COPY src ./src
+# COPY src ./src : pas de dossier src!
 CMD ["uvicorn", "scripts.main:app", "--host", "0.0.0.0", "--port", "8000"]
