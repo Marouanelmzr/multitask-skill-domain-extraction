@@ -6,7 +6,9 @@ FROM base AS development
 COPY requirements.dev.txt .
 #COPY . . : # COPY du code source en dernier : les dépendances sont ainsi mises en cache par Docker et pip install ne se réexécute que si requirements.txt change, pas à chaque modification du code.
 EXPOSE 8000
-RUN pip install --no-cache-dir -r requirements.dev.txt 
+RUN pip install --no-cache-dir \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    -r requirements.dev.txt
 COPY scripts ./scripts
 CMD ["uvicorn", "scripts.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
@@ -21,9 +23,12 @@ CMD ["uvicorn", "scripts.main:app", "--host", "0.0.0.0", "--port", "8000", "--re
 
 #pour le build : docker compose -f docker-compose.yml -f docker-compose.prod.yml
 FROM base AS production
-COPY requirements.dev.txt .
+COPY requirements.prod.txt .
 EXPOSE 8000
-RUN pip install --no-cache-dir -r requirements.dev.txt
+RUN pip install --no-cache-dir \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    -r requirements.prod.txt
+    #changement du fichier car l'image du prod doit etre plus legere que dev !
 COPY scripts ./scripts
 # COPY src ./src : pas de dossier src!
 CMD ["uvicorn", "scripts.main:app", "--host", "0.0.0.0", "--port", "8000"]
