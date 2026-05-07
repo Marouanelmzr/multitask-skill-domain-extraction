@@ -11,17 +11,6 @@ app = FastAPI(
 # Load model once when API starts
 model, tokenizer, device = load_model()
 
-import os
-
-WEIGHTS_PATH = "models/best_model.pt"
-
-if not os.path.exists(WEIGHTS_PATH):
-    print("⚠️ AI model missing. Please download best_model.pt into /models")
-    model = None
-else:
-    model = torch.load(WEIGHTS_PATH)
-    
-
 class PredictionRequest(BaseModel):
     text: str
 
