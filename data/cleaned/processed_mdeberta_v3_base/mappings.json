@@ -1,0 +1,26 @@
+{
+  "model_name": "microsoft/mdeberta-v3-base",
+  "max_length": 256,
+  "tag2id": {
+    "O": 0,
+    "B-TECH": 1,
+    "I-TECH": 2
+  },
+  "id2tag": {
+    "0": "O",
+    "1": "B-TECH",
+    "2": "I-TECH"
+  },
+  "domain2id": {
+    "Web Frontend": 0,
+    "Web Backend": 1,
+    "Mobile Development": 2,
+    "DevOps and Cloud Infrastructure": 3,
+    "Data Engineering": 4,
+    "Machine Learning and AI": 5,
+    "Cybersecurity": 6,
+    "Embedded Systems and IoT": 7,
+    "High Performance and Quantum Computing": 8,
+    "Other": 9
+  }
+}

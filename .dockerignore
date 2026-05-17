@@ -1,9 +1,13 @@
 venv/
 .venv/
 
-data/
-models/
+# exclude heavy/unnecessary data
+data/cleaned/
+data/raw/
+data/tech_registry.json
+
 notebooks/
+src/
 
 wandb/
 runs/
@@ -18,9 +22,15 @@ __pycache__/
 .git/
 .gitignore
 
+# exclude pytorch weights — not needed in prod
 *.pt
 *.pth
 *.ckpt
-*.onnx
 *.bin
 *.safetensors
+
+# exclude unused model folders
+models/normaliser_st/
+models/best_model_v0.pt
+models/model_int8.pt
+models/best_model.pt

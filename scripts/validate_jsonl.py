@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 
-DATASET_PATH = "data/raw/other_100_synthetic.jsonl"
+DATASET_PATH = "data/raw/generated_100_yahya2.jsonl"
 
 ALLOWED_DOMAIN_LABELS = {
     "Web Frontend",

@@ -7,7 +7,7 @@ import json
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 INPUT_DIR = BASE_DIR / "data" / "cleaned" / "splits"
-OUTPUT_DIR = BASE_DIR / "data" / "cleaned" / "processed"
+OUTPUT_DIR = BASE_DIR / "data" / "cleaned" / "processed_mdeberta_v3_base"
 
 TRAIN_FILE = INPUT_DIR / "train.jsonl"
 VAL_FILE = INPUT_DIR / "val.jsonl"
@@ -17,7 +17,7 @@ TRAIN_OUT = OUTPUT_DIR / "train_processed.jsonl"
 VAL_OUT = OUTPUT_DIR / "val_processed.jsonl"
 TEST_OUT = OUTPUT_DIR / "test_processed.jsonl"
 
-MODEL_NAME = "xlm-roberta-base"
+MODEL_NAME = "microsoft/mdeberta-v3-base"  #"xlm-roberta-base"
 # but i only have the label TECH
 TAG2ID = {
     "O": 0,

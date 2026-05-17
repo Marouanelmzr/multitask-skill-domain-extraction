@@ -1,9 +1,14 @@
 venv/
 .env
-models/
+models/best_model_v0.pt
+models/model_int8.pt
+models/best_model.pt
 data/raw/
 .ipynb_checkpoints/
 wandb/
 scripts/__pycache__/
 weights/
 .venv/
+models/normaliser_st
+models/model.onnx
+models/normaliser_onnx/model.onnx

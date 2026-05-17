@@ -1,9 +1,14 @@
-import torch
-from scripts.model import MultitaskXLM
+import numpy as np
+import onnxruntime as ort
+from pathlib import Path
+from tokenizers import Tokenizer
 from transformers import AutoTokenizer
+from scripts.normalise import TechNormaliser
 
-MODEL_NAME = "xlm-roberta-base"
-WEIGHTS_PATH = "models/best_model.pt"
+ROOT = Path(__file__).parent.parent
+
+MODEL_PATH     = ROOT / "models" / "model.onnx"
+TOKENIZER_PATH = ROOT / "models" / "tokenizer"
 
 ID2DOMAIN = {
     0: "Web Frontend",
@@ -19,24 +24,27 @@ ID2DOMAIN = {
 }
 
 def load_model():
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    opts = ort.SessionOptions()
+    opts.intra_op_num_threads = 2
+    opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
 
-    model = MultitaskXLM(
-        model_name=MODEL_NAME,
-        num_domain_labels=10,
-        num_ner_labels=3
+    session = ort.InferenceSession(
+        str(MODEL_PATH),
+        sess_options=opts,
+        providers=["CPUExecutionProvider"],
     )
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    # HF tokenizer needed for offset_mapping (tokenizers lib doesn't expose it as cleanly)
+    tokenizer = AutoTokenizer.from_pretrained(str(TOKENIZER_PATH))
 
-    model.load_state_dict(
-        torch.load(WEIGHTS_PATH, map_location=device)
+    tech_normaliser = TechNormaliser(
+        model_name="models/normaliser_onnx",
+        semantic_threshold=0.6,
+        registry_path="data/tech_registry.json"
     )
 
-    model.to(device)
-    model.eval()
+    return session, tokenizer, tech_normaliser
 
-    return model, tokenizer, device
 
 def extract_technologies(text, offsets, ner_predictions):
     technologies = []
@@ -44,14 +52,12 @@ def extract_technologies(text, offsets, ner_predictions):
     current_end = None
 
     for (start, end), label_id in zip(offsets, ner_predictions):
-        # special tokens usually have offset (0, 0)
         if start == end:
             continue
 
         if label_id == 1:  # B-TECH
             if current_start is not None:
                 technologies.append(text[current_start:current_end].strip())
-
             current_start = start
             current_end = end
 
@@ -71,47 +77,46 @@ def extract_technologies(text, offsets, ner_predictions):
     return list(dict.fromkeys(technologies))
 
 
-def predict_text(text, model, tokenizer, device, domain_threshold=0.5):
+def predict_text(text, session, tokenizer, tech_normaliser, domain_threshold=0.5):
     encoding = tokenizer(
         text,
-        return_tensors="pt",
+        return_tensors="np",        # numpy directly, no torch needed
         truncation=True,
         padding=True,
         max_length=256,
-        return_offsets_mapping=True
+        return_offsets_mapping=True,
     )
 
     offsets = encoding["offset_mapping"][0].tolist()
 
-    input_ids = encoding["input_ids"].to(device)
-    attention_mask = encoding["attention_mask"].to(device)
+    domain_logits, ner_logits = session.run(None, {
+        "input_ids":      encoding["input_ids"].astype(np.int64),
+        "attention_mask": encoding["attention_mask"].astype(np.int64),
+    })
 
-    with torch.inference_mode():
-        outputs = model(
-            input_ids=input_ids,
-            attention_mask=attention_mask
-        )
+    # ner_logits: (1, seq_len, 3)
+    ner_predictions = np.argmax(ner_logits[0], axis=-1).tolist()
 
-        ner_logits = outputs["ner_logits"]
-        domain_logits = outputs["domain_logits"]
+    # domain_logits: (1, 10) — sigmoid threshold
+    domain_probs = 1 / (1 + np.exp(-domain_logits[0]))
 
-        ner_predictions = torch.argmax(ner_logits, dim=-1)[0].cpu().tolist()
-        domain_probs = torch.sigmoid(domain_logits)[0].cpu()
+    raw_technologies = extract_technologies(
+        text=text,
+        offsets=offsets,
+        ner_predictions=ner_predictions,
+    )
 
-        technologies = extract_technologies(
-            text=text,
-            offsets=offsets,
-            ner_predictions=ner_predictions
-        )
+    normalized_technologies = tech_normaliser.normalise_batch(raw_technologies)
 
-        domains = [
-            ID2DOMAIN[i]
-            for i, prob in enumerate(domain_probs)
-            if prob >= domain_threshold and ID2DOMAIN[i] != "Other"
-        ]
+    domains = [
+        ID2DOMAIN[i]
+        for i, prob in enumerate(domain_probs)
+        if prob >= domain_threshold and ID2DOMAIN[i] != "Other"
+    ]
 
     return {
         "text": text,
-        "technologies": technologies,
-        "domains": domains
+        "technologies": normalized_technologies,
+        "raw_technologies": raw_technologies,
+        "domains": domains,
     }
