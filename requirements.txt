@@ -2,7 +2,7 @@
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pydantic==2.4.2
-onnxruntime==1.15.1
+onnxruntime==1.18.1
 transformers==4.35.2
 scikit-learn
 numpy==1.26.2
