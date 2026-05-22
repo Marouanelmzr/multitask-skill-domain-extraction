@@ -20,11 +20,13 @@ CMD ["uvicorn", "scripts.main:app", "--host", "0.0.0.0", "--port", "8000", "--re
 FROM base AS production
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y patchelf
+RUN find /usr/local/lib -name "onnxruntime_pybind11_state*.so" \
+    -exec patchelf --clear-execstack {} \;
 # only copy what the API actually needs at runtime
 COPY scripts/main.py        ./scripts/main.py
 COPY scripts/inference.py   ./scripts/inference.py
 COPY scripts/normalise.py   ./scripts/normalise.py
-COPY scripts/__init__.py    ./scripts/__init__.py
 COPY scripts/download_models.sh ./scripts/download_models.sh
 COPY models ./models
 COPY data ./data
