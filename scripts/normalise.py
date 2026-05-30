@@ -4,7 +4,15 @@ import json
 import threading
 import onnxruntime as ort
 from transformers import AutoTokenizer
-from sklearn.metrics.pairwise import cosine_similarity
+
+def cosine_similarity_single(query, corpus):
+    query = np.asarray(query, dtype=np.float32)
+    corpus = np.asarray(corpus, dtype=np.float32)
+
+    query_norm = np.linalg.norm(query)
+    corpus_norms = np.linalg.norm(corpus, axis=1)
+
+    return (corpus @ query) / (corpus_norms * query_norm)
 
 
 class ONNXEncoder:
@@ -72,7 +80,7 @@ class TechNormaliser:
         embedding = self.model.encode(technology).flatten()
         corpus_embeddings = np.array([d["embedding"].flatten() for d in self.registry.values()])
         canonical_names = list(self.registry.keys())
-        similarities = cosine_similarity(embedding.reshape(1, -1), corpus_embeddings)[0]
+        similarities = cosine_similarity_single( embedding, corpus_embeddings)
         max_idx = similarities.argmax()
         max_similarity = similarities[max_idx]
         canonical_tech = canonical_names[max_idx]

@@ -4,6 +4,6 @@ uvicorn[standard]==0.24.0
 pydantic==2.4.2
 onnxruntime==1.18.1
 transformers==4.35.2
-scikit-learn
+# scikit-learn  replaced by a manual numpy function
 numpy==1.26.2
 gdown==6.0.0
