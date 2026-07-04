@@ -47,7 +47,7 @@ dummy_mask = dummy["attention_mask"]
 # 3. Sanity check before export
 with torch.no_grad():
     d_logits, n_logits = export_model(dummy_ids, dummy_mask)
-    print(f"✅ Forward pass OK — domain: {d_logits.shape}, ner: {n_logits.shape}")
+    print(f"Forward pass OK, domain: {d_logits.shape}, ner: {n_logits.shape}")
 
 # 4. Export to ONNX
 ONNX_PATH = ROOT / "models" / "model.onnx"
@@ -67,13 +67,13 @@ torch.onnx.export(
     opset_version=17,
     do_constant_folding=True,
 )
-print(f"✅ Exported to {ONNX_PATH}")
+print(f"Exported to {ONNX_PATH}")
 
 # 5. Verify the exported graph
 print("Verifying ONNX graph...")
 onnx_model = onnx.load(str(ONNX_PATH))
 onnx.checker.check_model(onnx_model)
-print("✅ ONNX graph is valid")
+print("ONNX graph is valid")
 
 # 6. Verify outputs match PyTorch exactly
 print("Comparing PyTorch vs ONNX outputs...")
@@ -91,4 +91,4 @@ ner_diff    = np.abs(pt_ner.numpy()    - onnx_ner).max()
 print(f"Max domain logits diff : {domain_diff:.2e}  (expect < 1e-5)")
 print(f"Max NER logits diff    : {ner_diff:.2e}  (expect < 1e-5)")
 
-print("\n✅ Export complete — model.onnx is ready for production")
+print("\n Export complete, model.onnx is ready for production")

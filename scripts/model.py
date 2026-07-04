@@ -8,14 +8,14 @@ class MultitaskXLM(nn.Module):
         model_name="xlm-roberta-base",
         num_domain_labels=10,
         num_ner_labels=3,
-        dropout=0.1
     ):
         super().__init__()
 
         self.encoder = AutoModel.from_pretrained(model_name)
         hidden_size = self.encoder.config.hidden_size
 
-        self.dropout = nn.Dropout(dropout)
+        self.domain_dropout = nn.Dropout(0.2)
+        self.ner_dropout = nn.Dropout(0.1)
         self.domain_classifier = nn.Linear(hidden_size, num_domain_labels)
         self.ner_classifier = nn.Linear(hidden_size, num_ner_labels)
 
@@ -25,12 +25,14 @@ class MultitaskXLM(nn.Module):
             attention_mask=attention_mask,
         )
 
-        hidden_states = outputs.last_hidden_state
+        hidden_states = outputs.last_hidden_state.float()
 
-        cls_vector = hidden_states[:, 0, :]
+        # cls_vector = hidden_states[:, 0, :]
+        mask_expanded = attention_mask.unsqueeze(-1).float()
+        mean_pooled = (hidden_states * mask_expanded).sum(1) / mask_expanded.sum(1)
 
-        domain_logits = self.domain_classifier(self.dropout(cls_vector))
-        ner_logits = self.ner_classifier(self.dropout(hidden_states))
+        domain_logits = self.domain_classifier(self.domain_dropout(mean_pooled)) # instead of cls for better representation of the sequence
+        ner_logits = self.ner_classifier(self.ner_dropout(hidden_states))
 
         loss = None
 
@@ -45,7 +47,7 @@ class MultitaskXLM(nn.Module):
                 ner_labels.reshape(-1)
             )
 
-            loss = domain_loss + ner_loss
+            loss = domain_loss * 0.7 + ner_loss * 0.3 # Weighted loss because NER has way higher results that Domain classification
 
         return {
             "domain_logits": domain_logits,

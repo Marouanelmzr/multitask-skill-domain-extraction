@@ -11,7 +11,7 @@ TEST_RATIO = 0.10
 VAL_RATIO = 0.10
 SEED = 42
 
-# LOAD JSONL
+# Load jsonl
 data = []
 
 with open(INPUT_FILE, "r", encoding="utf-8") as f:
@@ -22,7 +22,7 @@ with open(INPUT_FILE, "r", encoding="utf-8") as f:
 
 print(f"Loaded {len(data)} samples")
 
-# PRIMARY LABEL FOR STRATIFICATION
+# Primary label for stratification
 def get_primary_label(sample):
     domains = sample.get("domain_labels", [])
     if not domains:
@@ -32,7 +32,7 @@ def get_primary_label(sample):
 labels = [get_primary_label(sample) for sample in data]
 
 
-# CHECK LABEL COUNTS
+# Check labels count
 label_counts = Counter(labels)
 
 print("\nLabel counts before split:")
@@ -45,7 +45,7 @@ if rare_labels:
         f"These labels have fewer than 2 samples and cannot be stratified safely: {rare_labels}"
     )
 
-# FIRST SPLIT: TRAIN+VAL / TEST
+# First split: TRAIN+VAL / TEST
 train_val, test = train_test_split(
     data,
     test_size=TEST_RATIO,
@@ -53,7 +53,7 @@ train_val, test = train_test_split(
     stratify=labels
 )
 
-# SECOND SPLIT: TRAIN / VAL
+# Second split: TRAIN / VAL
 train_val_labels = [get_primary_label(sample) for sample in train_val]
 
 val_relative_ratio = VAL_RATIO / (1 - TEST_RATIO)
@@ -65,7 +65,7 @@ train, val = train_test_split(
     stratify=train_val_labels
 )
 
-# SAVE JSONL
+# Save jsonl
 Path(OUTPUT_DIR).mkdir(exist_ok=True)
 
 def save_jsonl(path, samples):
@@ -78,7 +78,7 @@ save_jsonl(f"{OUTPUT_DIR}/val.jsonl", val)
 save_jsonl(f"{OUTPUT_DIR}/test.jsonl", test)
 
 
-# REPORT
+# Report
 def show_distribution(name, samples):
     counts = Counter(get_primary_label(sample) for sample in samples)
     print(f"\n{name} distribution:")

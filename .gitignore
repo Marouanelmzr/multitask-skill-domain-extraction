@@ -12,3 +12,6 @@ weights/
 models/normaliser_st
 models/model.onnx
 models/normaliser_onnx/model.onnx
+data/tech_registry.json
+data/cleaned/processed_old/
+data/cleaned/processed_old2/

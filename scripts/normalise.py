@@ -53,7 +53,6 @@ class TechNormaliser:
         if self.registry_path.exists():
             self._load_registry()
 
-    # everything below is unchanged
     def normalise(self, technology):
         with self._lock:
             result = self._normalise_unlocked(technology)
